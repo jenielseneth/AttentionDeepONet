@@ -240,10 +240,15 @@ c^1 & 0 & \dots & 0\\
 0 & \dots & & c^p \\
 \end{bmatrix} 
 \in \R^{p*n \times p}
-$$
-This results in a $p \times p$ diagonal matrix where the branch coefficients are along the diagonal.
 
+$$
+
+## Multi-layered DeepONet from an Attention perspective
+
+If $\psi(K)^TV$ gives us an $p \times p$ matrix, our final output $\phi(Q) \psi (K)^T V$ gives us a $N \times p$ matrix. If we interpret this as a single Attention layer, this can be thought of as our updated $Q$ matrix. We can then pass this updated matrix through another Attention layer.  
+ 
 ##
+
 We can even go one step further and rethink DeepONets as Chebyshev expansions. We reinterpret the trunk coefficients as the evaluations of our point $y$ of set of basis functions $t_1(y), t_2(y), \dots$. Let's assume that we want to evaluate at a point $y = \theta, \theta \in [-\pi, \pi]$. If we want to evaluate this point at a Chebyshev polynomial $T_n(y) = T_n(\cos(\theta)) = \cos(n\theta) = $.
 
 Let's look at the trunk net definition again:

@@ -54,12 +54,15 @@ class DeepONet(torch.nn.Module):
         self.branch_net = BranchNet(p, m, n, activation)
         self.trunk_net = TrunkNet(p, d, activation)
 
-    def forward(self, u, y):
+    def attention(self, u, y):
         b, m, c = u.shape
         b, n, d = y.shape
         branch_output = self.branch_net(u)  # Should be of shape (b, p)
         trunk_output = self.trunk_net(y)  # Should be of shape (b, n, p)
-        return torch.einsum("bp,bnp->bn", branch_output, trunk_output)
+        return torch.einsum("bp,bnp->bnp", branch_output, trunk_output)
+
+    def forward(self, u, y):
+        return self.attention(u, y).sum(dim=-1)  # Final output of shape (b, n)
 
 
 class MixDeepONet(torch.nn.Module):
@@ -75,7 +78,7 @@ class MixDeepONet(torch.nn.Module):
         self.trunk_net = TrunkNet(p, d, activation)
         self.mix_tensor = torch.nn.Parameter(torch.randn(p, p, p))
 
-    def forward(self, u, y):
+    def attention(self, u, y):
         b, m, c = u.shape
         b, n, d = y.shape
         branch_output = self.branch_net(u)  # Should be of shape (b, p)
@@ -85,7 +88,36 @@ class MixDeepONet(torch.nn.Module):
         )  # (b, p)
 
         trunk_output = self.trunk_net(y)  # Should be of shape (b, n, p)
-        return torch.einsum("bp,bnp->bn", mid_output, trunk_output)
+        return torch.einsum("bp,bnp->bnp", mid_output, trunk_output)
+
+    def forward(self, u, y):
+        return self.attention(u, y).sum(dim=-1)  # Final output of shape (b, n)
+
+
+class LayeredDeepONet(torch.nn.Module):
+    def __init__(self, p, m, n, d, activation, num_layers):
+        """
+        p = number of basis functions
+        m = number of function evaluations
+        n = number of points where the output is evaluated
+        d = dimension of the input points
+        num_layers = number of DeepONet layers
+        """
+        super(LayeredDeepONet, self).__init__()
+
+        self.deeponet_layers = torch.nn.ModuleList(
+            [DeepONet(p, m, n, d, activation)]
+            + [DeepONet(p, m, n, p, activation) for _ in range(num_layers - 1)]
+        )
+
+    def forward(self, u, y):
+        b, m, c = u.shape
+        b, n, d = y.shape
+
+        for i, layer in enumerate(self.deeponet_layers):
+            y = layer.attention(u, y)  # Update y for the next layer
+
+        return y.sum(dim=-1)  # Final output of shape (b, n)
 
 
 if __name__ == "__main__":
@@ -93,19 +125,28 @@ if __name__ == "__main__":
     m = 64
     n = 64
     d = 1
+    u = torch.randn(32, m, n)  # batch size of 32
+    y = torch.randn(32, n, d)  # batch size of 32
     activation = torch.nn.ReLU()
+
+    # Single Layer DeepONet
     model = DeepONet(p, m, n, d, activation)
     pytorch_total_params = sum(p.numel() for p in model.parameters())
     print(f"Total number of parameters: {pytorch_total_params}")
-    u = torch.randn(32, m, n)  # batch size of 32
-    y = torch.randn(32, n, d)  # batch size of 32
     output = model(u, y)
     print(output.shape)  # Should print torch.Size([32, 64])
 
+    # Single Layer MixDeepONet
     model = MixDeepONet(p, m, n, d, activation)
     pytorch_total_params = sum(p.numel() for p in model.parameters())
     print(f"Total number of parameters: {pytorch_total_params}")
-    u = torch.randn(32, m, n)  # batch size of 32
-    y = torch.randn(32, n, d)  # batch size of 32
+    output = model(u, y)
+    print(output.shape)  # Should print torch.Size([32, 64])
+
+    # Multiple Layer DeepONet
+    num_layers = 3
+    model = LayeredDeepONet(p, m, n, d, activation, num_layers)
+    pytorch_total_params = sum(p.numel() for p in model.parameters())
+    print(f"Total number of parameters: {pytorch_total_params}")
     output = model(u, y)
     print(output.shape)  # Should print torch.Size([32, 64])
