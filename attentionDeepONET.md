@@ -243,6 +243,25 @@ c^1 & 0 & \dots & 0\\
 
 $$
 
+## Mixing Tensor
+
+We embed a mixing tensor $A \in \R^{p \times p \times p \times p}$ in between $\phi(Q) \in \R^{ N \times p}$ and $\psi(K)^TV \in \R^{p\times p}$: 
+
+$$
+\text{attention(Q, K)} = \phi(Q)A(\psi(K)^TV)
+$$
+
+In Einstein notation, $A(\psi(K)^TV)$ would be written as $\text{einsum}(ijkl, kl -> ij)$. In mathematical formulation, this is then:
+$$
+C_{ij} = \sum_{k=1}^p \sum_{l=1}^p A_{ijkl} M_{kl}
+$$
+
+ Because $\psi(K)^TV$ is a diagonal 
+
+
+Because $\psi(K)^TV$ is a diagonal matrix, We don't necessarily need to store a $4D$ tensor as $A$. Instead, we can compress 
+
+
 ## Multi-layered DeepONet from an Attention perspective
 
 If $\psi(K)^TV$ gives us an $p \times p$ matrix, our final output $\phi(Q) \psi (K)^T V$ gives us a $N \times p$ matrix. If we interpret this as a single Attention layer, this can be thought of as our updated $Q$ matrix. We can then pass this updated matrix through another Attention layer.  
