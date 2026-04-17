@@ -86,11 +86,15 @@ class MixDeepONet(torch.nn.Module):
         branch_output = self.branch_net(u)  # Should be of shape (b, p)
 
         mid_output = torch.einsum(
-            "bp,ijp->bp", branch_output, self.mix_tensor
-        )  # (b, p)
+            "ijp, bp->bij", self.mix_tensor, branch_output
+        )  # (b, p, p)
 
         trunk_output = self.trunk_net(y)  # Should be of shape (b, n, p)
-        return torch.einsum("bp,bnp->bnp", mid_output, trunk_output)
+        return torch.einsum(
+            "bni, bij ->bnj",
+            trunk_output,
+            mid_output,
+        )  # Should return a tensor of shape (b, n, p)
 
     def forward(self, u, y):
         return self.attention(u, y).sum(dim=-1)  # Final output of shape (b, n)

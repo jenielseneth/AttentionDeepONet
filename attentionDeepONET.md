@@ -253,13 +253,15 @@ $$
 
 In Einstein notation, $A(\psi(K)^TV)$ would be written as $\text{einsum}(ijkl, kl -> ij)$. In mathematical formulation, this is then:
 $$
-C_{ij} = \sum_{k=1}^p \sum_{l=1}^p A_{ijkl} M_{kl}
+C_{ij} = \sum_{k=1}^p \sum_{l=1}^p A_{ijkl} (\psi(K)^TV)_{kl}
 $$
 
- Because $\psi(K)^TV$ is a diagonal 
+ Because $\psi(K)^TV$ is a diagonal, whenever $k \neq l$ we have $K_{kl} = 0$. This leads to a contraction of our formulation:
 
-
-Because $\psi(K)^TV$ is a diagonal matrix, We don't necessarily need to store a $4D$ tensor as $A$. Instead, we can compress 
+$$
+C_{ij} = \sum_{k=1}^p A_{ijkk} (\psi(K)^TV)_{kk}
+$$
+This means that only the diagonals of A in each sub-tensor at position $i,j$ are actually used, meaning we don't need to store a 4D tensor. Instead we can think of A as a 3D tensor: we denote the diagonal of \psi(K)^TV as v. We can effectively write: $C_i = A_i v$. 
 
 
 ## Multi-layered DeepONet from an Attention perspective
