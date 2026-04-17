@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Union
 
 import torch
 
@@ -47,10 +47,10 @@ class BranchNet(torch.nn.Module):
 class DeepONet(torch.nn.Module):
     def __init__(self, p, m, n, d, activation):
         """
-        p = number of basis functions
-        m = number of function evaluations
-        n = number of points where the output is evaluated
-        d = dimension of the input points
+        p = number of basis functions (trunk coefficients t_k and branch coefficients b_k, k=1,...,p)
+        m = number of function evaluations (u(x_j) for j=1,...,m)
+        n = number of points where the output is evaluated (y_i for i=1,...,n)
+        d = dimension of the input points (y_i in R^d)
         """
         super(DeepONet, self).__init__()
         self.branch_net = BranchNet(p, m, n, activation)
@@ -70,10 +70,10 @@ class DeepONet(torch.nn.Module):
 class MixDeepONet(torch.nn.Module):
     def __init__(self, p, m, n, d, activation):
         """
-        p = number of basis functions
-        m = number of function evaluations
-        n = number of points where the output is evaluated
-        d = dimension of the input points
+        p = number of basis functions (trunk coefficients t_k and branch coefficients b_k, k=1,...,p)
+        m = number of function evaluations (u(x_j) for j=1,...,m)
+        n = number of points where the output is evaluated (y_i for i=1,...,n)
+        d = dimension of the input points (y_i in R^d)
         """
         super(MixDeepONet, self).__init__()
         self.branch_net = BranchNet(p, m, n, activation)
@@ -108,10 +108,10 @@ class LayeredDeepONet(torch.nn.Module):
         deeponet_cls: Union[DeepONet, MixDeepONet],
     ):
         """
-        p = number of basis functions
-        m = number of function evaluations
-        n = number of points where the output is evaluated
-        d = dimension of the input points
+        p = number of basis functions (trunk coefficients t_k and branch coefficients b_k, k=1,...,p)
+        m = number of function evaluations (u(x_j) for j=1,...,m)
+        n = number of points where the output is evaluated (y_i for i=1,...,n)
+        d = dimension of the input points (y_i in R^d)
         num_layers = number of DeepONet layers
         """
         super(LayeredDeepONet, self).__init__()
