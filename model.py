@@ -1,3 +1,5 @@
+from typing import Literal, Union
+
 import torch
 
 
@@ -95,7 +97,16 @@ class MixDeepONet(torch.nn.Module):
 
 
 class LayeredDeepONet(torch.nn.Module):
-    def __init__(self, p, m, n, d, activation, num_layers):
+    def __init__(
+        self,
+        p,
+        m,
+        n,
+        d,
+        activation,
+        num_layers,
+        deeponet_cls: Union[DeepONet, MixDeepONet],
+    ):
         """
         p = number of basis functions
         m = number of function evaluations
@@ -106,8 +117,8 @@ class LayeredDeepONet(torch.nn.Module):
         super(LayeredDeepONet, self).__init__()
 
         self.deeponet_layers = torch.nn.ModuleList(
-            [DeepONet(p, m, n, d, activation)]
-            + [DeepONet(p, m, n, p, activation) for _ in range(num_layers - 1)]
+            [deeponet_cls(p, m, n, d, activation)]
+            + [deeponet_cls(p, m, n, p, activation) for _ in range(num_layers - 1)]
         )
 
     def forward(self, u, y):
@@ -145,7 +156,7 @@ if __name__ == "__main__":
 
     # Multiple Layer DeepONet
     num_layers = 3
-    model = LayeredDeepONet(p, m, n, d, activation, num_layers)
+    model = LayeredDeepONet(p, m, n, d, activation, num_layers, DeepONet)
     pytorch_total_params = sum(p.numel() for p in model.parameters())
     print(f"Total number of parameters: {pytorch_total_params}")
     output = model(u, y)
