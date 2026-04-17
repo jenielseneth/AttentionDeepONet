@@ -113,6 +113,7 @@ class LayeredDeepONet(torch.nn.Module):
         n = number of points where the output is evaluated (y_i for i=1,...,n)
         d = dimension of the input points (y_i in R^d)
         num_layers = number of DeepONet layers
+        deeponet_cls = class of the DeepONet layer (either DeepONet or MixDeepONet)
         """
         super(LayeredDeepONet, self).__init__()
 
